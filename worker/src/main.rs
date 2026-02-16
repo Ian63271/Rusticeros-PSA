@@ -9,7 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // GET /task
     let task: Task = client
-        .get("http://localhost:3000/task")
+        .get("http://coordinator:3000/task")
         .send()
         .await?
         .json()
@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // POST /result
     let response = client
-        .post("http://localhost:3000/result")
+        .post("http://coordinator:3000/result")
         .json(&result)
         .send()
         .await?

@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  coordinator:
+    build: .
+    container_name: coordinator
+    command: ./coordinator
+    ports:
+      - "3000:3000"
+
+  worker1:
+    build: .
+    container_name: worker1
+    command: ./worker
+    depends_on:
+      - coordinator
+
+  worker2:
+    build: .
+    container_name: worker2
+    command: ./worker
+    depends_on:
+      - coordinator
+
