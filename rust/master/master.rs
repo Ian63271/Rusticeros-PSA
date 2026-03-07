@@ -122,12 +122,20 @@ async fn main() {
 
     // Aquí definimos los nodos que harán el cálculo.
     // Cada uno es un servidor que corre el código worker.
-    let workers = vec![
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://localhost:3003",
-        "http://localhost:3004",
-    ];
+    // Obtener número de workers desde variable de entorno
+    let worker_count: u32 = std::env::var("WORKER_COUNT")
+        .unwrap_or("4".to_string())
+        .parse()
+        .unwrap();
+    
+    // Construir lista dinámicamente
+    let mut workers = Vec::new();
+    
+    for i in 1..=worker_count {
+        workers.push(format!("http://worker{}:3000", i));
+    }
+
+println!("Workers detectados: {:?}", workers);
 
 
 
