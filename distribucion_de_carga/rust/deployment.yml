@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mandelbrot-worker-service
+spec:
+  clusterIP: None
+  selector:
+    app: mandelbrot-worker
+  ports:
+    - port: 3000
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mandelbrot-worker
+spec:
+  serviceName: "mandelbrot-worker-service"
+  replicas: 20
+  selector:
+    matchLabels:
+      app: mandelbrot-worker
+  template:
+    metadata:
+      labels:
+        app: mandelbrot-worker
+    spec:
+      containers:
+      - name: worker
+        image: localhost:5000/mandel-worker:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mandelbrot-master
+spec:
+  template:
+    spec:
+      containers:
+      - name: master
+        image: localhost:5000/mandel-master:latest
+        imagePullPolicy: Always
+        env:
+        - name: WORKER_COUNT
+          value: "20"
+        - name: SERVICE_NAME
+          value: "mandelbrot-worker-service"
+        - name: NAMESPACE
+          value: "default"
+      restartPolicy: Never

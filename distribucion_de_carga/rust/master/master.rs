@@ -120,20 +120,23 @@ async fn main() {
     // Lista de workers
     // =============================
 
-    // Aquí definimos los nodos que harán el cálculo.
-    // Cada uno es un servidor que corre el código worker.
-    // Obtener número de workers desde variable de entorno
+    //AQUI SE MODIFICO
     let worker_count: u32 = std::env::var("WORKER_COUNT")
-        .unwrap_or("4".to_string())
-        .parse()
-        .unwrap();
-    
-    // Construir lista dinámicamente
+    .unwrap_or("20".to_string())
+    .parse()
+    .unwrap();
+
+    let service_name = std::env::var("SERVICE_NAME").unwrap_or("mandelbrot-worker-service".to_string());
+    let namespace = std::env::var("NAMESPACE").unwrap_or("default".to_string());
+
     let mut workers = Vec::new();
-    
-    for i in 1..=worker_count {
-        workers.push(format!("http://worker{}:3000", i));
+
+    // En K3s/K8s, los pods de un StatefulSet o con Headless Service 
+    // siguen el patrón: nombre-pod-id.nombre-servicio.namespace.svc.cluster.local
+    for i in 0..worker_count {
+        workers.push(format!("http://mandelbrot-worker-{}.{}.{}.svc.cluster.local:3000", i, service_name, namespace));
     }
+    
 
     println!("Workers detectados: {:?}", workers);
 
