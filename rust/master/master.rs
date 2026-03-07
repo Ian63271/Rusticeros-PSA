@@ -135,7 +135,7 @@ async fn main() {
         workers.push(format!("http://worker{}:3000", i));
     }
 
-println!("Workers detectados: {:?}", workers);
+    println!("Workers detectados: {:?}", workers);
 
 
 
