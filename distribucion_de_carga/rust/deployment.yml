@@ -1,43 +1,17 @@
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: mandelbrot-master
-spec:
-  template:
-    spec:
-      nodeSelector:
-        kubernetes.io/hostname: vmyl
-      containers:
-      - name: master
-        image: 10.100.0.1:5000/mandel-master:latest
-        env:
-        - name: WORKER_COUNT
-          value: "20"
-        volumeMounts:
-        - name: output-dir
-          mountPath: /app  # Probamos con /app que es común en Rust
-      volumes:
-      - name: output-dir
-        hostPath:
-          path: /home/vmyl/Rusticeros-PSA/distribucion_de_carga/rust
-          type: Directory
-      restartPolicy: Never
-  backoffLimit: 4
-
----
 apiVersion: v1
 kind: Service
 metadata:
   name: mandelbrot-worker-service
 spec:
+  clusterIP: None
   selector:
     app: mandelbrot-worker
-  clusterIP: None
   ports:
   - port: 3000
     targetPort: 3000
 
 ---
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -58,3 +32,36 @@ spec:
         image: 10.100.0.1:5000/mandel-worker:latest
         ports:
         - containerPort: 3000
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mandelbrot-master
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: vmyl
+      initContainers:
+      - name: wait-a-bit
+        image: busybox
+        # Aumentamos el tiempo a 40s para que los 20 workers lleguen a Running
+        command: ['sh', '-c', 'echo "Dando tiempo a los workers 0-19..."; sleep 40']
+      containers:
+      - name: master
+        image: 10.100.0.1:5000/mandel-master:latest
+        env:
+        - name: WORKER_COUNT
+          value: "20"
+        volumeMounts:
+        - name: output-dir
+          mountPath: /app
+      volumes:
+      - name: output-dir
+        hostPath:
+          path: /home/vmyl/Rusticeros-PSA/distribucion_de_carga/rust
+          type: Directory
+      restartPolicy: OnFailure
+  backoffLimit: 5
