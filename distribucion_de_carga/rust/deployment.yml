@@ -3,14 +3,14 @@ kind: Service
 metadata:
   name: mandelbrot-worker-service
 spec:
-  clusterIP: None
   selector:
     app: mandelbrot-worker
   ports:
-    - port: 3000
-
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  clusterIP: None
 ---
-
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -32,9 +32,7 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
-
 ---
-
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -46,6 +44,8 @@ spec:
       - name: master
         image: localhost:5000/mandel-master:latest
         imagePullPolicy: Always
+        command: ["/usr/local/bin/master"]
+        workingDir: /app
         env:
         - name: WORKER_COUNT
           value: "20"
@@ -54,3 +54,4 @@ spec:
         - name: NAMESPACE
           value: "default"
       restartPolicy: Never
+  backoffLimit: 2
