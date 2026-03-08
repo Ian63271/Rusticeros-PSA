@@ -1,3 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mandelbrot-master
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: vmyl
+      containers:
+      - name: master
+        image: 10.100.0.1:5000/mandel-master:latest
+        env:
+        - name: WORKER_COUNT
+          value: "20"
+        volumeMounts:
+        - name: output-dir
+          mountPath: /app  # Probamos con /app que es común en Rust
+      volumes:
+      - name: output-dir
+        hostPath:
+          path: /home/vmyl/Rusticeros-PSA/distribucion_de_carga/rust
+          type: Directory
+      restartPolicy: Never
+  backoffLimit: 4
+
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -5,11 +32,11 @@ metadata:
 spec:
   selector:
     app: mandelbrot-worker
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 3000
   clusterIP: None
+  ports:
+  - port: 3000
+    targetPort: 3000
+
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -28,30 +55,6 @@ spec:
     spec:
       containers:
       - name: worker
-        image: localhost:5000/mandel-worker:latest
-        imagePullPolicy: Always
+        image: 10.100.0.1:5000/mandel-worker:latest
         ports:
         - containerPort: 3000
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: mandelbrot-master
-spec:
-  template:
-    spec:
-      containers:
-      - name: master
-        image: localhost:5000/mandel-master:latest
-        imagePullPolicy: Always
-        command: ["/usr/local/bin/master"]
-        workingDir: /app
-        env:
-        - name: WORKER_COUNT
-          value: "20"
-        - name: SERVICE_NAME
-          value: "mandelbrot-worker-service"
-        - name: NAMESPACE
-          value: "default"
-      restartPolicy: Never
-  backoffLimit: 2

@@ -251,34 +251,16 @@ async fn main() {
     // =============================
     // Reconstrucción de la imagen
     // =============================
-
     for res in responses {
-
-        // Índice dentro del vector de píxeles
-        let mut idx = 0;
-
-        // Calculamos el ancho del bloque que devolvió el worker
         let block_width = res.pixels.len() as u32 / height;
-
-
-
-        // Recorremos el bloque recibido
-        for x in res.x_start..res.x_start + block_width {
+        for x in 0..block_width {
             for y in 0..height {
-
-                // Valor de iteración del Mandelbrot
-                let val = res.pixels[idx];
-
-                idx += 1;
-
-                // Convertimos iteraciones a color
+                let val = res.pixels[(x * height + y) as usize];
                 let color = (val % 256) as u8;
-
-                // Guardamos el pixel en la imagen final
-                img.put_pixel(x, y, Luma([color]));
+                img.put_pixel(res.x_start + x, y, Luma([color]));
             }
         }
-    }
+    } 
 
 
 
