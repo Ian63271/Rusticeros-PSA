@@ -1,0 +1,28 @@
+[Interface]
+PrivateKey = ${WG_SERVER_PRIVATE_KEY}
+Address = ${WG_SERVER_ADDRESS}
+ListenPort = ${WG_SERVER_PORT}
+
+# -------- Peer 1 --------
+[Peer]
+PublicKey = ${PEER1_PUBLIC_KEY}
+AllowedIPs = ${PEER1_ALLOWED_IP}
+Endpoint = ${PEER1_ENDPOINT}
+
+# -------- Peer 2 --------
+[Peer]
+PublicKey = ${PEER2_PUBLIC_KEY}
+AllowedIPs = ${PEER2_ALLOWED_IP}
+Endpoint = ${PEER2_ENDPOINT}
+
+# -------- Peer 3 --------
+[Peer]
+PublicKey = ${PEER3_PUBLIC_KEY}
+AllowedIPs = ${PEER3_ALLOWED_IP}
+Endpoint = ${PEER3_ENDPOINT}
+
+# -------- Peer 4 --------
+[Peer]
+PublicKey = ${PEER4_PUBLIC_KEY}
+AllowedIPs = ${PEER4_ALLOWED_IP}
+Endpoint = ${PEER4_ENDPOINT}
