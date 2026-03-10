@@ -1,0 +1,14 @@
+services:
+  worker:
+    image: worker-node/v1
+    build: .
+    container_name: worker-prueba
+    cap_add:
+      - NET_ADMIN
+    restart: always
+    networks:
+      - vpn-net
+
+networks:
+  vpn-net:
+    driver: bridge
