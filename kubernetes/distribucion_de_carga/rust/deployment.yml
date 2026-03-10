@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mandelbrot-master
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: vmyl
+      containers:
+      - name: master
+        image: 10.100.0.1:5000/mandel-master:latest
+        env:
+        - name: WORKER_COUNT
+          value: "20"
+        volumeMounts:
+        - name: output-dir
+          mountPath: /app  # Probamos con /app que es común en Rust
+      volumes:
+      - name: output-dir
+        hostPath:
+          path: /home/vmyl/Rusticeros-PSA/distribucion_de_carga/rust
+          type: Directory
+      restartPolicy: Never
+  backoffLimit: 4
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mandelbrot-worker-service
+spec:
+  selector:
+    app: mandelbrot-worker
+  clusterIP: None
+  ports:
+  - port: 3000
+    targetPort: 3000
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mandelbrot-worker
+spec:
+  serviceName: "mandelbrot-worker-service"
+  replicas: 20
+  selector:
+    matchLabels:
+      app: mandelbrot-worker
+  template:
+    metadata:
+      labels:
+        app: mandelbrot-worker
+    spec:
+      containers:
+      - name: worker
+        image: 10.100.0.1:5000/mandel-worker:latest
+        ports:
+        - containerPort: 3000
