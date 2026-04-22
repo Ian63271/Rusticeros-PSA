@@ -1,14 +1,33 @@
 services:
-  worker:
-    image: worker-node/v1
-    build: .
-    container_name: worker-prueba
+
+  coordinator:
+    build:
+      context: ..
+      dockerfile: docker/coordinator/Dockerfile
+    ports:
+      - "5558:5558"   # ROUTER/DEALER
+    environment:
+      - COORDINATOR_HOST=${COORDINATOR_HOST}
+    profiles: ["local", "coord"]
+
+  edge:
+    build:
+      context: ..
+      dockerfile: docker/edge/Dockerfile
+    environment:
+      - COORDINATOR_HOST=${COORDINATOR_HOST}
     cap_add:
       - NET_ADMIN
-    restart: always
-    networks:
-      - vpn-net
+    profiles: ["local", "node"]
 
-networks:
-  vpn-net:
-    driver: bridge
+  sensor:
+    build:
+      context: ..
+      dockerfile: docker/sensor/Dockerfile
+    profiles: ["local", "node"]
+
+
+
+
+
+
